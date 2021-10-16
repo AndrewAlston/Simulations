@@ -1,3 +1,5 @@
+// CSID Simulation code
+
 #include <getopt.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
@@ -5,6 +7,10 @@
 #include "helpers.h"
 #include "consts.h"
 
+// Global in case we wanna dump hex of each packet as we go
+static int dump_hex = 0;
+
+// Random helper function just to fill in some defaults
 void *fill_srh(__u8 *buffer) {
     struct ipv6_sr_hdr *srh = (void *) buffer;
     srh->nexthdr = 43;
@@ -138,6 +144,7 @@ void parse_segment_argument(struct segments *seg, char *seg_opt) {
 struct arguments *parse_args(int argc, char **argv) {
     printf("Running argument parser...\n");
     static struct option long_opts[] = {
+            {"hex", no_argument, &dump_hex, 1},
             {"src",     required_argument, 0, 's'},
             {"dst",     required_argument, 0, 'd'},
             {"loc",     required_argument, 0, 'l'},
@@ -158,6 +165,9 @@ struct arguments *parse_args(int argc, char **argv) {
             break;
         }
         switch (c) {
+            case 0:
+                if(long_opts[option_index].flag != 0)
+                    break;
             case 's':
                 if (inet_pton(AF_INET6, optarg, &res->src) != 1) {
                     printf("Failed to parse source address %s\n", optarg);
@@ -327,17 +337,21 @@ int main(int argc, char **argv) {
     printf("[%s %d bit] DA change [%s --> %s]\n",
            tail->seg_type == 2?"NEXT":"REPLACE", tail->seg_length, orig_dst, dst);
     printf("\tForwarding [%s -> %s]\n", src, dst);
+    if(dump_hex == 1)
+        dump_ptr(packet, packet_len);
     while (tail != NULL) {
         inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
         memcpy(orig_dst, dst, 64);
         if (tail->seg_type == 2) {
-            ((usid_behavior) tail->f_ptr)(packet, 48, tail->seg_length);
+            ((sid_behavior) tail->f_ptr)(packet, 48, tail->seg_length);
         }
         inet_ntop(AF_INET6, &hdr->ip6_src, src, INET6_ADDRSTRLEN);
         inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
         printf("[%s %d bit] DA change [%s --> %s]\n",
                tail->seg_type == 2?"NEXT":"REPLACE", tail->seg_length, orig_dst, dst);
         printf("\tForwarding [%s -> %s]\n", src, dst);
+        if(dump_hex == 1)
+            dump_ptr(packet, packet_len);
         tail = tail->prev;
     }
     free(packet);

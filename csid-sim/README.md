@@ -10,6 +10,15 @@ https://datatracker.ietf.org/doc/draft-filsfilscheng-spring-srv6-srh-compression
 This is a work in progress - and currently the code to emulate the next behavior is functional,
 behavior for the replace behavior to follow shortly.
 
+### Implementation notes ###
+
+The code generates a fake IPv6 packet and then using the command line arguments, produces an SRH stack that is used to
+encapsulate said packet.  Using the type argument is assigns a processing function to each SID that is used at each 
+iteration as we "forward" the packet.  
+
+This also makes it possible to expand this code with different behaviors in a relatively simple manner
+
+
 ### How to run this ###
 
 The code has 4 basic parameters to specify source and destination address, locator, and a segment list.
@@ -42,6 +51,9 @@ This would produce:
 [NEXT 16 bit] DA change [2001:db8:101:aabb:: --> 2001:db8:eeee::20]
     Forwarding [2001:db8:fefe::10 -> 2001:db8:eeee::20]
 ```
+
+Appending --hex to the command line will cause the code to dump the hex of the entire packet in a format that is
+importable by wireshark for deeper analysis.
 
 Replace behavior has yet to be implemented - this will follow shortly
 

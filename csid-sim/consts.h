@@ -14,7 +14,7 @@
 __u8 src_mac[6] = { 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF };
 __u8 dst_mac[6] = { 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6 };
 
-typedef void*(*usid_behavior)(void *pkt, __u8 loc_size, __u8 sid_size);
+typedef void*(*sid_behavior)(void *pkt, __u8 loc_size, __u8 sid_size);
 
 #define ETH_SIZE sizeof(struct ethhdr)
 #define IPV6_SIZE sizeof(struct ip6_hdr)
