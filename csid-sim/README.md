@@ -32,11 +32,16 @@ Where 2001:db8:1::1 is the unicast source, 2001:db8:2::1 is the unicast destinat
 
 This would produce:
 
-Original packet 2001:db8:fefe::10 -> 2001:db8:eeee::20
-Packet now moving from 2001:db8:fefe::10 -> 2001:db8:101:eeff:ccdd:aabb::
-Packet now moving from 2001:db8:fefe::10 -> 2001:db8:101:ccdd:aabb::
-Packet now moving from 2001:db8:fefe::10 -> 2001:db8:101:aabb::
-Packet now moving from 2001:db8:fefe::10 -> 2001:db8:eeee::20
+```Original packet 2001:db8:fefe::10 -> 2001:db8:eeee::20
+[NEXT 16 bit] DA change [2001:db8:eeee::20 --> 2001:db8:101:eeff:ccdd:aabb::]
+    Forwarding [2001:db8:fefe::10 -> 2001:db8:101:eeff:ccdd:aabb::]
+[NEXT 16 bit] DA change [2001:db8:101:eeff:ccdd:aabb:: --> 2001:db8:101:ccdd:aabb::]
+    Forwarding [2001:db8:fefe::10 -> 2001:db8:101:ccdd:aabb::]
+[NEXT 16 bit] DA change [2001:db8:101:ccdd:aabb:: --> 2001:db8:101:aabb::]
+    Forwarding [2001:db8:fefe::10 -> 2001:db8:101:aabb::]
+[NEXT 16 bit] DA change [2001:db8:101:aabb:: --> 2001:db8:eeee::20]
+    Forwarding [2001:db8:fefe::10 -> 2001:db8:eeee::20]
+```
 
 Replace behavior has yet to be implemented - this will follow shortly
 
