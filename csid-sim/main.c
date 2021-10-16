@@ -324,21 +324,20 @@ int main(int argc, char **argv) {
     inet_ntop(AF_INET6, &hdr->ip6_src, src, INET6_ADDRSTRLEN);
     memcpy(orig_dst, dst, 64);
     inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
-    printf("[%s behavior %d sid length] Switching outer most destination address from %s --> %s\n",
+    printf("[%s %d bit] DA change [%s --> %s]\n",
            tail->seg_type == 2?"NEXT":"REPLACE", tail->seg_length, orig_dst, dst);
-    printf("\tPacket now moving from %s -> %s\n", src, dst);
+    printf("\tForwarding [%s -> %s]\n", src, dst);
     while (tail != NULL) {
-        memcpy(orig_dst, dst, 64);
-        printf("[%s behavior %d sid length] Switching outer most destination address from %s --> %s\n",
-               tail->seg_type == 2?"NEXT":"REPLACE", tail->seg_length, orig_dst, dst);
-        inet_ntop(AF_INET6, &hdr->ip6_src, src, INET6_ADDRSTRLEN);
         inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
+        memcpy(orig_dst, dst, 64);
         if (tail->seg_type == 2) {
             ((usid_behavior) tail->f_ptr)(packet, 48, tail->seg_length);
         }
         inet_ntop(AF_INET6, &hdr->ip6_src, src, INET6_ADDRSTRLEN);
         inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
-        printf("\tPacket now moving from %s -> %s\n", src, dst);
+        printf("[%s %d bit] DA change [%s --> %s]\n",
+               tail->seg_type == 2?"NEXT":"REPLACE", tail->seg_length, orig_dst, dst);
+        printf("\tForwarding [%s -> %s]\n", src, dst);
         tail = tail->prev;
     }
     free(packet);
