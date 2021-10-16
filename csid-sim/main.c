@@ -301,6 +301,7 @@ void *process_usid(void *pkt, __u8 loc_size, __u8 sid_size) {
 int main(int argc, char **argv) {
     int srh_len;
     int packet_len;
+    char orig_dst[64] = {0};
     char src[64] = {0};
     char dst[64] = {0};
     struct arguments *args = parse_args(argc, argv);
@@ -315,14 +316,21 @@ int main(int argc, char **argv) {
     inet_ntop(AF_INET6, &args->src, src, INET6_ADDRSTRLEN);
     inet_ntop(AF_INET6, &args->dst, dst, INET6_ADDRSTRLEN);
     printf("Original packet %s -> %s\n", src, dst);
+    memcpy(orig_dst, dst, 64);
     void *srh_stack = gen_srh_stack(args->locator, 48, args->segs.tail, &srh_len);
     void *packet = gen_ipv6_pkt(args, srh_stack, srh_len, &packet_len);
     struct ip6_hdr *hdr = packet + ETH_SIZE;
     struct seg_list *tail = args->segs.tail;
     inet_ntop(AF_INET6, &hdr->ip6_src, src, INET6_ADDRSTRLEN);
+    memcpy(orig_dst, dst, 64);
     inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
-    printf("Packet now moving from %s -> %s\n", src, dst);
+    printf("[%s behavior %d sid length] Switching outer most destination address from %s --> %s\n",
+           tail->seg_type == 2?"NEXT":"REPLACE", tail->seg_length, orig_dst, dst);
+    printf("\tPacket now moving from %s -> %s\n", src, dst);
     while (tail != NULL) {
+        memcpy(orig_dst, dst, 64);
+        printf("[%s behavior %d sid length] Switching outer most destination address from %s --> %s\n",
+               tail->seg_type == 2?"NEXT":"REPLACE", tail->seg_length, orig_dst, dst);
         inet_ntop(AF_INET6, &hdr->ip6_src, src, INET6_ADDRSTRLEN);
         inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
         if (tail->seg_type == 2) {
@@ -330,7 +338,7 @@ int main(int argc, char **argv) {
         }
         inet_ntop(AF_INET6, &hdr->ip6_src, src, INET6_ADDRSTRLEN);
         inet_ntop(AF_INET6, &hdr->ip6_dst, dst, INET6_ADDRSTRLEN);
-        printf("Packet now moving from %s -> %s\n", src, dst);
+        printf("\tPacket now moving from %s -> %s\n", src, dst);
         tail = tail->prev;
     }
     free(packet);
